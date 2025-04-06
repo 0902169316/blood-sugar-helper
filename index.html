@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>血糖助手</title>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f8f6;
+      padding: 20px;
+    }
+    .card {
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      font-size: 28px;
+    }
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 4px;
+      font-size: 16px;
+    }
+    .output {
+      margin-top: 10px;
+      color: green;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>血糖助手</h1>
+    <label>血糖修正因子（每 1U 可降幾 mg/dL）</label>
+    <input id="correctionFactor" type="number" value="100" />
+  </div>
+  <div id="meals"></div>
+
+  <script>
+    const meals = ["breakfast", "lunch", "dinner"];
+    const mealNames = { breakfast: "早餐", lunch: "中餐", dinner: "晚餐" };
+
+    function createMealCard(meal) {
+      const mealDiv = document.createElement("div");
+      mealDiv.className = "card";
+      mealDiv.innerHTML = \`
+        <h2>\${mealNames[meal]}</h2>
+        <label>血糖</label>
+        <input id="\${meal}-sugar" type="number"/>
+        <label>碳水化合物（g）</label>
+        <input id="\${meal}-carbs" type="number"/>
+        <label>碳水比（CI 值）</label>
+        <input id="\${meal}-ci" type="number" value="\${meal === 'breakfast' ? 6 : 10}"/>
+        <label>實際打的胰島素劑量</label>
+        <input id="\${meal}-dose" type="number"/>
+        <div class="output" id="\${meal}-result"></div>
+      \`;
+      document.getElementById("meals").appendChild(mealDiv);
+
+      mealDiv.querySelectorAll("input").forEach(input =>
+        input.addEventListener("input", () => update(meal))
+      );
+    }
+
+    function update(meal) {
+      const sugar = parseFloat(document.getElementById(\`\${meal}-sugar\`).value) || 0;
+      const carbs = parseFloat(document.getElementById(\`\${meal}-carbs\`).value) || 0;
+      const ci = parseFloat(document.getElementById(\`\${meal}-ci\`).value) || 10;
+      const dose = parseFloat(document.getElementById(\`\${meal}-dose\`).value) || 0;
+      const cf = parseFloat(document.getElementById("correctionFactor").value) || 100;
+
+      const recommend = (sugar > 100 ? (sugar - 100) / cf : 0) + carbs / ci;
+      const estimate = sugar - dose * cf + (carbs / ci - dose) * 10;
+      const result = document.getElementById(\`\${meal}-result\`);
+      result.textContent = \`建議胰島素：\${recommend.toFixed(1)} 單位，預估血糖：\${estimate.toFixed(0)}\`;
+    }
+
+    meals.forEach(createMealCard);
+  </script>
+</body>
+</html>
