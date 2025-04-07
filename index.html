@@ -1,0 +1,56 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>血糖助手</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f8f5; padding: 20px; }
+    h1 { text-align: center; }
+    .container { background: #fff; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; }
+    label { display: block; margin-top: 15px; }
+    input { width: 100%; padding: 8px; margin-top: 5px; }
+    .result { margin-top: 20px; font-weight: bold; color: green; }
+  </style>
+</head>
+<body>
+  <h1>血糖助手</h1>
+  <div class="container">
+    <label>餐前血糖（mg/dL）<input id="preMeal" type="number" /></label>
+    <label>目標血糖（mg/dL）<input id="target" type="number" value="100" /></label>
+    <label>血糖修正因子（每 1U 可降幾 mg/dL）<input id="factor" type="number" value="100" /></label>
+    <label>碳水化合物（g）<input id="carbs" type="number" /></label>
+    <label>碳水比（CI 值）<input id="ci" type="number" value="10" /></label>
+    <label>實際打的胰島素劑量<input id="dose" type="number" /></label>
+    <div class="result" id="suggestion"></div>
+    <div class="result" id="estimate"></div>
+  </div>
+
+  <script>
+    const inputs = document.querySelectorAll("input");
+    inputs.forEach(input => input.addEventListener("input", calculate));
+
+    function calculate() {
+      const preMeal = parseFloat(document.getElementById("preMeal").value) || 0;
+      const target = parseFloat(document.getElementById("target").value) || 100;
+      const factor = parseFloat(document.getElementById("factor").value) || 100;
+      const carbs = parseFloat(document.getElementById("carbs").value) || 0;
+      const ci = parseFloat(document.getElementById("ci").value) || 10;
+      const dose = parseFloat(document.getElementById("dose").value) || 0;
+
+      const correction = (preMeal - target) / factor;
+      const carbInsulin = carbs / ci;
+      const suggestedDose = correction + carbInsulin;
+
+      const carbOffset = carbs - suggestedDose * ci;
+      const estimate = preMeal - dose * factor - carbOffset * ci;
+
+      document.getElementById("suggestion").innerText =
+        `建議胰島素：${suggestedDose.toFixed(1)} 單位`;
+      document.getElementById("estimate").innerText =
+        `預估血糖：${Math.round(estimate)} mg/dL`;
+    }
+  </script>
+</body>
+</html>
