@@ -1,0 +1,74 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>血糖助手</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #eef7f2; padding: 20px; }
+    .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
+    h1 { text-align: center; }
+    label { font-weight: bold; display: block; margin-top: 15px; }
+    input { width: 100%; padding: 8px; margin-top: 5px; }
+    .result { margin-top: 20px; font-size: 1.2em; color: green; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>血糖助手</h1>
+    <label>餐前血糖（mg/dL）</label>
+    <input type="number" id="sugar" />
+
+    <label>目標血糖（mg/dL）</label>
+    <input type="number" id="target" value="100" />
+
+    <label>血糖修正因子（每 1U 可降幾 mg/dL）</label>
+    <input type="number" id="factor" value="100" />
+
+    <label>碳水化合物（g）</label>
+    <input type="number" id="carbs" />
+
+    <label>碳水比（CI 值）</label>
+    <input type="number" id="ci" value="10" />
+
+    <label>實際打的胰島素劑量</label>
+    <input type="number" id="actualInsulin" />
+
+    <div class="result" id="recommendation"></div>
+    <div class="result" id="estimate"></div>
+  </div>
+
+  <script>
+    const inputs = document.querySelectorAll("input");
+    const recommendation = document.getElementById("recommendation");
+    const estimate = document.getElementById("estimate");
+
+    function calculate() {
+      const sugar = parseFloat(document.getElementById("sugar").value);
+      const target = parseFloat(document.getElementById("target").value);
+      const factor = parseFloat(document.getElementById("factor").value);
+      const carbs = parseFloat(document.getElementById("carbs").value);
+      const ci = parseFloat(document.getElementById("ci").value);
+      const actual = parseFloat(document.getElementById("actualInsulin").value);
+
+      if (!isNaN(sugar) && !isNaN(target) && !isNaN(factor) && !isNaN(carbs) && !isNaN(ci)) {
+        const carbInsulin = carbs / ci;
+        const correctionInsulin = (sugar - target) / factor;
+        const total = carbInsulin + correctionInsulin;
+
+        recommendation.innerHTML = `建議胰島素：${total.toFixed(1)} 單位`;
+
+        if (!isNaN(actual)) {
+          const estimatedBG = sugar - ((actual - carbInsulin) * factor);
+          estimate.innerHTML = `預估血糖：${estimatedBG.toFixed(0)} mg/dL`;
+        } else {
+          estimate.innerHTML = "";
+        }
+      }
+    }
+
+    inputs.forEach(input => input.addEventListener("input", calculate));
+  </script>
+</body>
+</html>
