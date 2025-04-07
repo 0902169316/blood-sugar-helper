@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>血糖助手</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f0f8f4;
+      padding: 20px;
+    }
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #222;
+    }
+    label {
+      display: block;
+      margin-top: 16px;
+      margin-bottom: 4px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      color: green;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>血糖助手</h1>
+    <label>餐前血糖（mg/dL）<input id="preMeal" type="number"/></label>
+    <label>目標血糖（mg/dL）<input id="target" type="number" value="100"/></label>
+    <label>血糖修正因子（每 1U 可降幾 mg/dL）<input id="factor" type="number" value="100"/></label>
+    <label>碳水化合物（g）<input id="carbs" type="number"/></label>
+    <label>碳水比（CI 值）<input id="ci" type="number" value="10"/></label>
+    <label>實際打的胰島素劑量<input id="actual" type="number"/></label>
+    <div class="result" id="insulinResult"></div>
+    <div class="result" id="glucoseResult"></div>
+  </div>
+
+  <script>
+    const inputs = document.querySelectorAll("input");
+    inputs.forEach(input => input.addEventListener("input", calculate));
+
+    function calculate() {
+      const preMeal = parseFloat(document.getElementById("preMeal").value);
+      const target = parseFloat(document.getElementById("target").value);
+      const factor = parseFloat(document.getElementById("factor").value);
+      const carbs = parseFloat(document.getElementById("carbs").value);
+      const ci = parseFloat(document.getElementById("ci").value);
+      const actual = parseFloat(document.getElementById("actual").value);
+
+      if (isNaN(preMeal) || isNaN(target) || isNaN(factor) || isNaN(carbs) || isNaN(ci)) return;
+
+      const suggested = ((preMeal - target) / factor) + (carbs / ci);
+      document.getElementById("insulinResult").innerText = `建議胰島素：${suggested.toFixed(1)} 單位`;
+
+      if (!isNaN(actual)) {
+        const glucose = preMeal - ((actual - (carbs / ci)) * factor);
+        document.getElementById("glucoseResult").innerText = `預估血糖：${Math.floor(glucose)} mg/dL`;
+      } else {
+        document.getElementById("glucoseResult").innerText = "";
+      }
+    }
+  </script>
+</body>
+</html>
